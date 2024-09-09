@@ -1,0 +1,122 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model admins {
+  id             Int     @id @default(autoincrement())
+  admin_name     String? @db.Text
+  admin_email    String? @db.Text
+  admin_role_id  Int?
+  created_by     String? @db.Text
+  created_on     String? @db.Text
+  last_edited_by String? @db.Text
+  last_edited_on String? @db.Text
+  roles          roles?  @relation(fields: [admin_role_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "admins_ibfk_1")
+
+  @@index([admin_role_id], map: "admin_role_id")
+}
+
+model notifications {
+  id           Int         @id @default(autoincrement())
+  requestor_id Int?
+  content      String?     @db.Text
+  request_id   Int?
+  seen         Boolean?    @default(false)
+  created_at   DateTime    @default(now()) @db.Timestamp(0)
+  requests     requests?   @relation(fields: [request_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "notifications_ibfk_1")
+  requestors   requestors? @relation(fields: [requestor_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "notifications_ibfk_2")
+
+  @@index([request_id], map: "request_id")
+  @@index([requestor_id], map: "requestor_id")
+}
+
+model permissions {
+  id               Int                @id @default(autoincrement())
+  permission_name  String?            @db.Text
+  role_permissions role_permissions[]
+}
+
+model requestors {
+  id                    Int                    @id @default(autoincrement())
+  fullnames             String?                @db.VarChar(50)
+  email                 String?                @db.VarChar(60)
+  requester_type        String?                @db.VarChar(40)
+  requester_affiliation String?                @db.VarChar(60)
+  request_purpose       String?                @db.Text
+  department            String?                @db.Text
+  division              String?                @db.Text
+  employee_id_no        String?                @db.Text
+  notifications         notifications[]
+  requestors_documents  requestors_documents[]
+  requests              requests[]
+}
+
+model requestors_documents {
+  id                 Int         @id @default(autoincrement())
+  document_name      String?     @db.Text
+  document_type      String?     @db.Text
+  document_file_path String?     @db.Text
+  request_id         Int?
+  requester_id       Int?
+  last_edited_by     String?     @db.Text
+  last_edited_on     String?     @db.Text
+  requests           requests?   @relation(fields: [request_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "requestors_documents_ibfk_1")
+  requestors         requestors? @relation(fields: [requester_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "requestors_documents_ibfk_2")
+
+  @@index([request_id], map: "request_id")
+  @@index([requester_id], map: "requester_id")
+}
+
+model requests {
+  id                    Int                    @id @default(autoincrement())
+  description           String?                @db.Text
+  period                String?                @db.Text
+  request_status        String?                @default("pending") @db.VarChar(22)
+  requested_by          Int?
+  date_requested        String?                @db.Text
+  reviewed_by           String?                @db.Text
+  date_reviewed         String?                @db.Text
+  review_status         String                 @default("pending") @db.VarChar(22)
+  allocated_to          String?                @db.Text
+  allocated_on          String?                @db.Text
+  allocated_by          String?                @db.Text
+  allocation_status     String                 @default("pending") @db.VarChar(22)
+  allocatee_feedback    String?                @db.Text
+  allocatee_status      String                 @default("pending") @db.VarChar(22)
+  allocatee_attachments String?                @db.Text
+  allocatee_feedback_on String?                @db.Text
+  tracking_status       String?                @default("requested") @db.VarChar(22)
+  time_stamp            DateTime               @default(now()) @db.Timestamp(0)
+  last_edited_by        String?                @db.Text
+  last_edited_on        String?                @db.Text
+  notifications         notifications[]
+  requestors_documents  requestors_documents[]
+  requestors            requestors?            @relation(fields: [requested_by], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "requests_ibfk_1")
+
+  @@index([requested_by], map: "requested_by")
+}
+
+model role_permissions {
+  id            Int          @id @default(autoincrement())
+  role_id       Int
+  permission_id Int?
+  permissions   permissions? @relation(fields: [permission_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "permissions")
+  roles         roles        @relation(fields: [role_id], references: [id], onUpdate: Restrict, map: "roles")
+
+  @@index([permission_id], map: "permission_id")
+  @@index([role_id], map: "role_id")
+}
+
+model roles {
+  id               Int                @id @default(autoincrement())
+  role_name        String?            @db.Text
+  admins           admins[]
+  role_permissions role_permissions[]
+
+  @@index([id], map: "id")
+}
