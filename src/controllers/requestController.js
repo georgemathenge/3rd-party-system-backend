@@ -23,20 +23,43 @@ exports.getAllRequests = async (req, res) => {
         const pageSize = parseInt(limit);
         const skip = (pageNumber - 1) * pageSize; 
         const filters = {};
+        const roleFilter = {};
 
         if (fullnames) filters.fullnames = { contains: fullnames };
         if (email) filters.email = { contains: email };
         if (requester_type) filters.requester_type = requester_type;
         if (request_purpose) filters.request_purpose = request_purpose;
         if (date_requested) filters.date_requested = new Date(date_requested); // Assuming date_requested is passed as a string
+       req.user_role = "dc";
+       req.user_id = 1; //switch this to p/no
 
+        // Role-based filter map (scalable)
+        const roleBasedFilters = {
+            cm: { requester_type: { in: ["requester_type_2", "requester_type_2"] }},
+            dc: { requester_type: { in: ["requester_type_1", "requester_type_4"] }},
+        };
+
+        const accessFilters = {
+            allocatee: { allocation_status: "allocated",allocated_to:`${req.user_id}` },
+        };
+
+
+        // Apply role-specific filters
+        if (req.user_role && roleBasedFilters[req.user_role]) {
+            roleFilter.review_status = "approved"
+            Object.assign(filters, roleBasedFilters[req.user_role]);
+        }
+        // Apply allocatee-specific filters
+        if (req.user_role === "allocatee") {
+            Object.assign(roleFilter, accessFilters[req.user_role]);
+        }
         // Perform the Prisma query with pagination and filtering
         const requests = await prisma.requests.findMany({
-            skip: skip, // Pagination: skip how many records
+            skip: skip,
             take: pageSize, // Pagination: limit number of records
             where: {
+                ...roleFilter,
                 requestors: {
-                    // Apply filters to requestors relation
                     ...filters,
                 },
             },
@@ -58,6 +81,7 @@ exports.getAllRequests = async (req, res) => {
         // Optionally, get the total number of records for pagination metadata
         const totalRequests = await prisma.requests.count({
             where: {
+                ...roleFilter,
                 requestors: {
                     ...filters,
                 },
@@ -176,7 +200,7 @@ exports.reviewRequest = async (req, res) => {
 };
 exports.allocateRequest = async (req, res) => {
     try {
-        const { allocation_status, allocated_by } = req.body;
+        const { allocation_status, allocated_by, allocated_to } = req.body;
         // Perform the Prisma query with pagination and filtering
        
         const requests = await prisma.requests.findUnique({
@@ -195,6 +219,7 @@ exports.allocateRequest = async (req, res) => {
                 data: {
                     allocation_status: allocation_status,
                     tracking_status:"allocated",
+                    allocated_to:allocated_to,
                     allocated_by: allocated_by,
                     allocated_on: formattedDate,
                 },

@@ -20,7 +20,7 @@ exports.login = async (req, res) => {
         }
    
         const token = jwt.sign({
-            user: _.pick(user[0], ['id', 'email', 'role']),
+            user: _.pick(user[0], ['id', 'email', 'role']), ///add p/no
         },
             SECRET,
             {
