@@ -1,3 +1,13 @@
+/**
+ * @swagger
+ * /fetch:
+ *   get:
+ *     summary: the list of requests
+ *     responses:
+ *       200:
+ *         description: Retrieve the list of requests in accordance to your role. */
+
+
 const express = require('express');
 const requestController = require('../controllers/requestController');
 const router = express.Router();
@@ -18,6 +28,9 @@ router.post('/review/:id',
 router.post('/allocate/:id',
     //  checkRole('user'),
     requestController.allocateRequest);
+router.post('/resolve/:id',
+    //  checkRole('user'),
+    requestController.resolveRequest);
 
 
 module.exports = router ; 

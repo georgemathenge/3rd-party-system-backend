@@ -29,14 +29,15 @@ exports.getAllRequests = async (req, res) => {
         if (email) filters.email = { contains: email };
         if (requester_type) filters.requester_type = requester_type;
         if (request_purpose) filters.request_purpose = request_purpose;
-        if (date_requested) filters.date_requested = new Date(date_requested); // Assuming date_requested is passed as a string
-       req.user_role = "dc";
+        if (date_requested) roleFilter.date_requested =date_requested;
+
+        req.user_role = "cd";
        req.user_id = 1; //switch this to p/no
 
         // Role-based filter map (scalable)
         const roleBasedFilters = {
-            cm: { requester_type: { in: ["requester_type_2", "requester_type_2"] }},
-            dc: { requester_type: { in: ["requester_type_1", "requester_type_4"] }},
+            cm: { requester_type: { in: ["requester_type_2", "requester_type_3"] }},
+            dc: { requester_type: { in: ["requester_type_2", "requester_type_4"] }},
         };
 
         const accessFilters = {
@@ -131,12 +132,12 @@ exports.getRequestById = async (req, res) => {
             res.send({
                 data: requests,
                 status: 230,
-                message: "Retrieved Requests Successfully"
+                message: "Retrieved Request Successfully"
             });
         }
         else {
             res.send({
-                status: 404, message: "No data found", total: totalRequests,
+                status: 404, message: "No data found"
                
             })
         }
@@ -150,6 +151,7 @@ exports.reviewRequest = async (req, res) => {
     try {
     const {review_status, reviewed_by} =req.body;
         // Perform the Prisma query with pagination and filtering
+
         const requests = await prisma.requests.findUnique({
             where: {
                 id: parseInt(req.params.id),
