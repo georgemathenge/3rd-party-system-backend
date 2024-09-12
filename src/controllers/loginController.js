@@ -1,26 +1,44 @@
 
 const prisma = require('../prisma/prismaClient');
+const ApiAuth = require('../services/externalApiService')
+const jwt = require('jsonwebtoken');
+const _ = require('lodash');
+
+
 const SECRET = process.env.SECRET
 exports.login = async (req, res) => {
     try {
-        const user = await prisma.users.findMany({
+const {ad_acc, user_pass }= req.body
+const response = await ApiAuth(ad_acc, user_pass)
 
-            //should be req.body.email
-            where: { email: req.body.email }
+if(response.status == 200){
+        const user = await prisma.admins.findMany({
+            where: { admin_email: response.data.email },
+            select:{
+                id:true,
+                admin_name:true,
+                admin_email:true,
+               roles:{
+                select:{
+                    id:true,
+                    role_name:true,
+                }
+               }
+            }
         })
-        console.log('user: ', user);
         if (user.length === 0) {
-            res.send(({ status: 404, error: 'Not user with that email', token: null }));
+            res.send(({ status: 404, error: 'Admin account not found', token: null }));
             return;
         }
-        const valid = await bcrypt.compare(req.body.password, user[0].password);
-        if (!valid) {
-            res.send(({ status: 410, error: 'Incorrect password', token: null }));
-            return;
-        }
+        // const valid = await bcrypt.compare(req.body.password, user[0].password);
+        // if (!valid) {
+        //     res.send(({ status: 410, error: 'Incorrect password', token: null }));
+        //     return;
+        // }
    
         const token = jwt.sign({
-            user: _.pick(user[0], ['id', 'email', 'role']), ///add p/no
+            user: _.pick(user[0], ['id', 'admin_name']), 
+            role: _.pick(user[0].roles, ['id', 'role_name']), 
         },
             SECRET,
             {
@@ -33,16 +51,16 @@ exports.login = async (req, res) => {
             {
                 expiresIn: '5m',
             });
-        // const response = {
-        //   "status": "logged in",
-        //   "token":token,
-        //   "refreshToken":refreshToken,
-        //  }
-
-
-
+    
         res.send(({ status: 230, error: null, token: token, refreshToken: refreshToken, data: user }));
-    } catch (e) {
+   
+}
+else {
+    res.send({status:response.status, message:response.message})
+}
+
+
+ } catch (e) {
         console.log(e)
     }
 };

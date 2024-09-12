@@ -39,9 +39,9 @@ const fetchrolePermissions = async () => {
 function authorizePermission(permission) {
     return async (req, res, next) => {
         const formattedRoles = await fetchrolePermissions()
-        const userPermissions = formattedRoles[req.body.role];
+        const userPermissions = formattedRoles[req.user_role];
         if (!userPermissions || !userPermissions.includes(permission)) {
-            return res.status(403).json({ message: 'Access forbidden: insufficient permissions' });
+            return res.status(403).json({ message: 'Access forbidden: insufficient permissions. Please Contact your administrator' });
         }
         next();
     };

@@ -1,7 +1,11 @@
 // app.js
 const express = require('express');
 const requestRoutes = require('./routes/requestRoutes');
+const adminRoutes = require('./routes/adminRoutes');
+const roleRoutes = require('./routes/roleRoutes');
+const permissionRoutes = require('./routes/permissionRoutes');
 const notifcationRoutes = require('./routes/notificationRoutes');
+const loginRoutes = require('./routes/loginRoutes');
 const swaggerUi = require('swagger-ui-express');
 const swaggerJsdoc = require('swagger-jsdoc');
 
@@ -28,10 +32,16 @@ const swaggerSpec = swaggerJsdoc(swaggerOptions);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 
-// Use routes
-app.use('/api/v1/requests', requestRoutes);
-// app.use('/api/v1/fetch/requests/:id', requestRoutes);
+//Login
+app.use('/api/v1', loginRoutes);
 
+//Admin Routes
+app.use('/api/v1/admins', adminRoutes);
+app.use('/api/v1/roles', roleRoutes);
+app.use('/api/v1/permissions', permissionRoutes);
+
+// Use Request routes
+app.use('/api/v1/requests', requestRoutes);
 app.use('/api/v1/fetch/notifcations', notifcationRoutes);
 
 module.exports = app;

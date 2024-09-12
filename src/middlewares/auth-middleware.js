@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken')
 module.exports = async (req, res, next) => {
     try {
+        if (!req.headers.authorization) return res.send({ status: 403, message: "Authenication Required", data: [] })
         const token = req.headers.authorization.split(' ')[1];
         jwt.verify(token, process.env.SECRET, async (err, result) => {
             if (err) {
@@ -8,7 +9,7 @@ module.exports = async (req, res, next) => {
             }
             else {
                 req.user_id = result.user.id;
-                req.user_role = result.user.role;
+                req.user_role = result.role.role_name;
                 next()
             }
 

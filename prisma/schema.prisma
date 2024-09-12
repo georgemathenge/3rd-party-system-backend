@@ -108,8 +108,10 @@ model role_permissions {
   permissions   permissions? @relation(fields: [permission_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "permissions")
   roles         roles        @relation(fields: [role_id], references: [id], onUpdate: Restrict, map: "roles")
 
+  @@unique([permission_id, role_id], map: "permission_id_2")
   @@index([permission_id], map: "permission_id")
   @@index([role_id], map: "role_id")
+  @@index([permission_id, role_id], map: "permission_id_3")
 }
 
 model roles {
