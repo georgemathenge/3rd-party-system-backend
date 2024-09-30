@@ -3,14 +3,20 @@ const prisma = require('../prisma/prismaClient');
 const ApiAuth = require('../services/externalApiService')
 const jwt = require('jsonwebtoken');
 const _ = require('lodash');
+const dayjs = require('dayjs');
 
+const now = dayjs();
+const formattedDate = now.format('YYYY-MM-DD HH:mm:ss');
 
 const SECRET = process.env.SECRET
 exports.login = async (req, res) => {
     try {
 const {ad_acc, user_pass }= req.body
+        if (!ad_acc || !user_pass) {
+            return res.status(400).json({ error: 'ad_acc and user_pass are required', status :400 });
+        }
 const response = await ApiAuth(ad_acc, user_pass)
-
+        let roleName = "requester"
 if(response.status == 200){
         const user = await prisma.admins.findMany({
             where: { admin_email: response.data.email },
@@ -18,7 +24,7 @@ if(response.status == 200){
                 id:true,
                 admin_name:true,
                 admin_email:true,
-               roles:{
+                roles:{
                 select:{
                     id:true,
                     role_name:true,
@@ -26,9 +32,38 @@ if(response.status == 200){
                }
             }
         })
-        if (user.length === 0) {
-            res.send(({ status: 404, error: 'Admin account not found', token: null }));
-            return;
+        if (user.length ===0) {
+            // Find the role by its name
+            let role = await prisma.roles.findMany({
+                where: {
+                    role_name: roleName,
+                },
+            });
+
+            // If the role doesn't exist, you can create one (optional)
+            if (role.length ===0) {
+                role = await prisma.roles.create({
+                    data: {
+                        role_name: roleName,
+                    },
+                });
+            }
+
+             user = await prisma.admins.create({
+                data: {
+                     admin_name: response.data.admin_name,
+                     admin_email: response.data.email,
+                     created_by:"system",
+                     created_on: formattedDate,
+                     roles:{
+                         connect: { 
+                            id: role.id 
+                        },
+                     }
+                     },
+              
+            })
+         
         }
         // const valid = await bcrypt.compare(req.body.password, user[0].password);
         // if (!valid) {
@@ -52,7 +87,7 @@ if(response.status == 200){
                 expiresIn: '5m',
             });
     
-        res.send(({ status: 230, error: null, token: token, refreshToken: refreshToken, data: user }));
+        res.send(({ status: 230, error: null,message:"Login Successful", token: token, refreshToken: refreshToken}));
    
 }
 else {
