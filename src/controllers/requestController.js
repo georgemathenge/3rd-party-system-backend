@@ -68,6 +68,7 @@ exports.getAllRequests = async (req, res) => {
                 id:true,
                 description: true,
                 date_requested: true,
+                tracking_status:true,
                 requestors: {
                     select: {
                         fullnames: true,
