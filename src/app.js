@@ -13,6 +13,11 @@ const app = express();
 
 // Middleware to parse JSON bodies
 app.use(express.json());
+app.use(cors({
+    origin: '*', // Allow all origins (consider specifying your frontend origin for production)
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 // Swagger definition and options
 const swaggerOptions = {
