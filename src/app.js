@@ -8,13 +8,16 @@ const notifcationRoutes = require('./routes/notificationRoutes');
 const loginRoutes = require('./routes/loginRoutes');
 const swaggerUi = require('swagger-ui-express');
 const swaggerJsdoc = require('swagger-jsdoc');
+const cors = require('cors'); // Make sure this line is here to import the cors package
 
 const app = express();
 
 // Middleware to parse JSON bodies
 app.use(express.json());
+
+// Middleware to allow requests from all origins
 app.use(cors({
-    origin: '*', // Allow all origins (consider specifying your frontend origin for production)
+    origin: '*', // Allow all origins
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
@@ -36,11 +39,10 @@ const swaggerSpec = swaggerJsdoc(swaggerOptions);
 // Swagger UI middleware
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-
-//Login
+// Login Routes
 app.use('/api/v1', loginRoutes);
 
-//Admin Routes
+// Admin Routes
 app.use('/api/v1/admins', adminRoutes);
 app.use('/api/v1/roles', roleRoutes);
 app.use('/api/v1/permissions', permissionRoutes);
