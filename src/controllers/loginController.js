@@ -49,7 +49,7 @@ if(response.status == 200){
                 });
             }
 
-             user = await prisma.admins.create({
+             const newUser = await prisma.admins.create({
                 data: {
                      admin_name: response.data.admin_name,
                      admin_email: response.data.email,
@@ -63,6 +63,7 @@ if(response.status == 200){
                      },
               
             })
+            user = [newUser]; 
          
         }
         // const valid = await bcrypt.compare(req.body.password, user[0].password);
