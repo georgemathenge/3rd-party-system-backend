@@ -8,6 +8,7 @@ const notifcationRoutes = require('./routes/notificationRoutes');
 const loginRoutes = require('./routes/loginRoutes');
 const swaggerUi = require('swagger-ui-express');
 const swaggerJsdoc = require('swagger-jsdoc');
+const cors = require('cors')
 
 const app = express();
 
