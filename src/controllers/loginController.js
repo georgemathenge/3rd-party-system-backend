@@ -34,14 +34,14 @@ if(response.status == 200){
         })
         if (user.length ===0) {
             // Find the role by its name
-            let role = await prisma.roles.findMany({
+            let role = await prisma.roles.findFirst({
                 where: {
                     role_name: roleName,
                 },
             });
 
             // If the role doesn't exist, you can create one (optional)
-            if (role.length ===0) {
+            if (!role) {
                 role = await prisma.roles.create({
                     data: {
                         role_name: roleName,
