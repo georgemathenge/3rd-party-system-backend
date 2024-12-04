@@ -18,7 +18,7 @@ const {ad_acc, user_pass }= req.body
 const response = await ApiAuth(ad_acc, user_pass)
         let roleName = "requester"
 if(response.status == 200){
-        const user = await prisma.admins.findMany({
+        let user = await prisma.admins.findMany({
             where: { admin_email: response.data.email },
             select:{
                 id:true,
